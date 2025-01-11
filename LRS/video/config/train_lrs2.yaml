@@ -36,7 +36,7 @@ model:
     mtlalpha: 0.1
     ctc_type: builtin
     rel_pos_type: latest
-    codec: # Leave it empty if you want to run inference only. For training, you can set it as "wav2vec2" or "vq". We used vq for reporting results in our paper. But to avoid using fairseq, we recommend to use wav2vec2.
+    codec: vq # Leave it empty if you want to run inference only. For training, you can set it as "wav2vec2" or "vq". We used vq for reporting results in our paper. But to avoid using fairseq, we recommend to use wav2vec2.
   audio_backbone:
     adim: 768
     aheads: 12
@@ -83,7 +83,7 @@ decode:
 num_workers: 8
 gpus: -1
 slurm_job_id: 1
-train: False
+train: True
 log_wandb: True
 infer_path: 1
 ckpt_path:
