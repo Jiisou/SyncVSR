@@ -1,4 +1,123 @@
-### Acknowledgement
+### File Structure
+```
+└── 📁LRS
+    └── 📁video
+        └── .gitignore
+        └── 📁config
+            └── lrs2.yaml
+            └── lrs3.yaml
+        └── 📁cross-modal-sync
+        └── 📁datamodule
+            └── av_dataset.py
+            └── data_module.py
+            └── transforms.py
+            └── turbojpeg.py
+            └── video_length.npy
+        └── 📁espnet
+            └── 📁asr
+                └── asr_utils.py
+            └── 📁nets
+                └── batch_beam_search.py
+                └── beam_search.py
+                └── ctc_prefix_score.py
+                └── e2e_asr_common.py
+                └── lm_interface.py
+                └── 📁pytorch_backend
+                    └── 📁backbones
+                        └── conv1d_extractor.py
+                        └── conv3d_extractor.py
+                        └── 📁modules
+                                └── resnet.cpython-311.pyc
+                                └── resnet.cpython-39.pyc
+                                └── resnet1d.cpython-311.pyc
+                                └── resnet1d.cpython-39.pyc
+                            └── resnet.py
+                            └── resnet1d.py
+                            └── shufflenetv2.py
+                    └── ctc.py
+                    └── e2e_asr_transformer.py
+                    └── 📁lm
+                        └── __init__.py
+                        └── default.py
+                        └── seq_rnn.py
+                        └── transformer.py
+                    └── nets_utils.py
+                    └── 📁transformer
+                        └── __init__.py
+                        └── add_sos_eos.py
+                        └── attention.py
+                        └── convolution.py
+                        └── decoder_layer.py
+                        └── decoder.py
+                        └── embedding.py
+                        └── encoder_layer.py
+                        └── encoder.py
+                        └── label_smoothing_loss.py
+                        └── layer_norm.py
+                        └── mask.py
+                        └── multi_layer_conv.py
+                        └── optimizer.py
+                        └── plot.py
+                        └── positionwise_feed_forward.py
+                        └── raw_embeddings.py
+                        └── repeat.py
+                        └── subsampling.py
+                └── scorer_interface.py
+                └── 📁scorers
+                    └── __init__.py
+                    └── ctc.py
+                    └── length_bonus.py
+            └── 📁utils
+                └── cli_utils.py
+                └── dynamic_import.py
+                └── fill_missing_args.py
+        └── 📁ko_aihub
+            └── 📁test
+                └── 📁lip_J_1_F_03_C282_A_001
+                    └── lip_J_1_F_03_C282_A_001_11.pkl
+                        ...
+                └── 📁lip_J_1_F_03_C282_A_002
+                    ...
+            └── 📁train
+            └── 📁val
+
+        └── 📁LRS2
+        └── 📁LRS2_YOLO (...output of prepare code)
+                └── 📁main
+                    └── 📁5535415699068794046
+                        └── 00001.mp4
+                        └── 00001.txt
+                        └── 00002.mp4
+                        └── 00002.txt
+                        └── 00003.mp4
+                        └── 00003.txt
+                        └── ...
+                    └── 📁pretrain
+                        └── ...
+
+                └── split_data.py
+            └── prepare_LRS2.py
+            └── prepare_LRS3.py
+            └── prepare_Vox2.py
+            └── transcribe_whisper.py
+            └── utils.py
+            └── yolov8n-face.pt
+        └── README.md
+        └── requirements0114_train_success.txt
+        └── setup.sh
+        └── 📁spm
+            └── spm_encode.py
+            └── spm_train.py
+            └── train.sh
+            └── 📁unigram
+                └── unigram5000_units.txt
+                └── unigram5000.model
+        └── utils.py
+        └── Vox+LRS2+LRS3.ckpt
+        └── vq-wav2vec_kmeans.pt
+```
+---
+### Acknowledgement of Original Authors
 
 ```
 @inproceedings{ott2019fairseq,
