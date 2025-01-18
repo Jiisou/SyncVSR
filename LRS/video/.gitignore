@@ -162,3 +162,7 @@ cython_debug/
 #.idea/
 wandb
 *.ckpt
+
+# dataset
+mvlrs_v1*/
+*.pkl
