@@ -1,5 +1,22 @@
 # SyncVSR
 
+```
+SyncVSR
+├── 📁 assets
+├── 📁 fairseq
+│     └── 📁...etc
+│     └── 📁 fairseq
+│     └── 📁 faireseq_cli
+│     └── 📁 hydra_plugins
+│     omit...
+│ 
+├── 📁 LRS/video
+└── 📁 LRW
+LICENSE
+README.md
+```
+---
+
 ### <a href="https://www.isca-archive.org/interspeech_2024/ahn24_interspeech.pdf" target="_blank">SyncVSR: Data-Efficient Visual Speech Recognition with End-to-End Crossmodal Audio Token Synchronization (Interspeech 2024)</a>
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/syncvsr-data-efficient-visual-speech/lipreading-on-lip-reading-in-the-wild)](https://paperswithcode.com/sota/lipreading-on-lip-reading-in-the-wild?p=syncvsr-data-efficient-visual-speech)  
