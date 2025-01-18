@@ -1,5 +1,5 @@
 batch_size: 16
-train_name: "LRS2_lambda"
+train_name: "aihub_ko_lambda"
 checkpoint:
   save_top_k: 10
 data:

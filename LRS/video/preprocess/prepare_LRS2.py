@@ -14,7 +14,7 @@ from turbojpeg import TurboJPEG, TJPF_GRAY, TJSAMP_GRAY, TJFLAG_PROGRESSIVE
 from utils import retrieve_txt
 
 # constants
-MODEL_PATH = "./yolov8n-face.pt" # https://github.com/akanametov/yolo-face?tab=readme-ov-file#trained-models
+MODEL_PATH = "/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/preprocess/yolov8n-face.pt" # https://github.com/akanametov/yolo-face?tab=readme-ov-file#trained-models
 jpeg = TurboJPEG()
 
 def load_model(model_path):
@@ -22,7 +22,7 @@ def load_model(model_path):
     model = YOLO(model_path)
     return model
 
-def find_bbox(image, model=YOLO(MODEL_PATH), device="cuda"):
+def find_bbox(image, model=YOLO(MODEL_PATH), device="mps"):
     """find bounding box"""
     res = model.predict(
       image,
@@ -94,8 +94,9 @@ def preprocess(file_name):
     result["text"] = retrieve_txt(file_name)
 
     # save
-    data_dir = "/data/LRS2"
-    target_dir = "/data/LRS2_YOLO"
+    # data_dir = "/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/preprocess/data/LRS2" # "/data/LRS2"
+    data_dir = "/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/preprocess/data/mvlrs_v1" #"/Users/jisu/Downloads/mvlrs_v1" # "/data/LRS2"
+    target_dir = "/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/preprocess/data/mvlrs_v1_YOLO"
     savename = file_name.replace(data_dir, target_dir).replace(".mp4", ".pkl")
     try:
         if not os.path.exists(os.path.dirname(savename)):
@@ -128,8 +129,11 @@ if __name__ == "__main__":
     elif device == "cpu":
         num_workers = 0
 
-    data_dir = "/data/LRS2/"
-    target_dir = "/data/LRS2_YOLO/"
+    # data_dir = "/data/LRS2/"
+    # target_dir = "/data/LRS2_YOLO/"
+    data_dir = "/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/preprocess/data/mvlrs_v1" #"/Users/jisu/Downloads/mvlrs_v1" # "/data/LRS2"
+    target_dir = "/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/preprocess/data/mvlrs_v1_YOLO"
+
 
     # Fetch mp4s
     pretrain_mp4_files = glob(os.path.join(data_dir, "pretrain", "**", "*.mp4"))

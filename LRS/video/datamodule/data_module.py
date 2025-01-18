@@ -58,9 +58,12 @@ class DataModule(LightningDataModule):
         self.cfg.gpus = torch.cuda.device_count()
         self.total_gpus = torch.cuda.device_count()
         
-        self.train_filenames = glob(f"/data/{self.cfg.dataset}/train/*/*.pkl")
-        self.val_filenames = glob(f"/data/{self.cfg.dataset}/val/*/*.pkl")
-        self.test_filenames = glob(f"/data/{self.cfg.dataset}/test/*/*.pkl")
+        self.train_filenames = glob("LRS/video/ko_aihub/train/*/*.pkl")
+        self.val_filenames = glob("/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/ko_aihub/val/*/*.pkl")
+        self.test_filenames = glob("/Users/jisu/Desktop/dev/prometheus/SyncVSR/LRS/video/ko_aihub/test/*/*.pkl")
+        # self.train_filenames = glob(f"/data/{self.cfg.dataset}/train/*/*.pkl")
+        # self.val_filenames = glob(f"/data/{self.cfg.dataset}/val/*/*.pkl")
+        # self.test_filenames = glob(f"/data/{self.cfg.dataset}/test/*/*.pkl")
 
 
     def _dataloader(self, ds, collate_fn):
