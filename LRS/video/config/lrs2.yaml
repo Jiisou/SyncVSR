@@ -1,5 +1,5 @@
 batch_size: 16
-train_name: "LRS2_lambda10"
+train_name: "LRS2_jisu"
 checkpoint:
   save_top_k: 10
 data:
