@@ -166,3 +166,6 @@ wandb
 # dataset
 mvlrs_v1*/
 *.pkl
+
+*.pt
+*.log
