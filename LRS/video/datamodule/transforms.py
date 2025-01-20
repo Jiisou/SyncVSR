@@ -155,9 +155,14 @@ class TextTransform:
         self.ignore_id = -1
 
     def tokenize(self, text):
-        tokens = self.spm.EncodeAsPieces(text)
-        token_ids = [self.hashmap.get(token, self.hashmap["<unk>"]) for token in tokens]
-        return torch.tensor(list(map(int, token_ids)), dtype=torch.int64)
+        try: # 예외처리 추가함으로써 SentencePiece 토크나이저가 입력 문장 적절히 처리하는지 여부를 디버깅
+            tokens = self.spm.EncodeAsPieces(text)
+            token_ids = [self.hashmap.get(token, self.hashmap["<unk>"]) for token in tokens]
+            return torch.tensor(list(map(int, token_ids)), dtype=torch.int64)
+        except Exception as e:
+            print(f"Tokenization error for text: {text}, error: {e}")
+            return torch.tensor([], dtype=torch.int64)  # 빈 텐서 반환
+
 
     def post_process(self, token_ids):
         token_ids = token_ids[token_ids != -1]

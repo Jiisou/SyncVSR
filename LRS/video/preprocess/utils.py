@@ -17,5 +17,11 @@ def pydub_to_np(audio: pydub.AudioSegment) -> Tuple[np.ndarray, int]:
     where each value is in range [-1.0, 1.0]. 
     Returns tuple (audio_np_array, sample_rate).
     """
-    return np.array(audio.get_array_of_samples(), dtype=np.float32).reshape((audio.channels, -1)) / (
-            1 << (8 * audio.sample_width - 1)), audio.frame_rate
+    # return np.array(audio.get_array_of_samples(), dtype=np.float32).reshape((audio.channels, -1)) / (
+    #         1 << (8 * audio.sample_width - 1)), audio.frame_rate
+    print(f"Converting AudioSegment: channels={audio.channels}, frame_rate={audio.frame_rate}, "
+        f"sample_width={audio.sample_width}, duration={len(audio)} ms")
+    samples = audio.get_array_of_samples()
+    print(f"Number of samples: {len(samples)}")
+    return np.array(samples, dtype=np.float32).reshape((audio.channels, -1)) / (
+        1 << (8 * audio.sample_width - 1)), audio.frame_rate

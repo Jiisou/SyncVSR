@@ -57,10 +57,64 @@ class AVDataset(torch.utils.data.Dataset):
         self.audio_multiple = 40
         print(f"using {self.language} with {self.cut} cut")
 
+    # def __getitem__(self, idx):
+    #     filename = self.filenames[idx]
+    #     try:
+    #         data = torch.load(filename)
+    #     except Exception as e:
+    #         print(f"Error loading {filename}: {e}")
+    #         return None
+
+    #     video = data["video"]
+    #     audio = data["audio"]
+    #     text = data["text"]
+
+    #     # Debugging: Original lengths
+    #     print(f"Original Sample {idx}: video={len(video)}, audio={len(audio)}")
+
+    #     # Convert audio to numpy array
+    #     audio, sampling_rate = pydub_to_np(audio)
+    #     print(f"pydub_to_np output: audio length = {len(audio)}, type = {type(audio)}")
+
+    #     # Ensure audio is valid and not too short
+    #     if not isinstance(audio, np.ndarray) or len(audio) < 10:
+    #         print(f"Warning: Invalid or short audio for sample {idx}. Skipping.")
+    #         return None
+
+    #     # Adjust audio length
+    #     target_audio_length = len(video) * self.audio_multiple
+    #     audio = torch.as_tensor(audio, dtype=torch.float32).squeeze()
+
+    #     if len(audio) < target_audio_length:
+    #         padding_length = target_audio_length - len(audio)
+    #         audio = torch.nn.functional.pad(audio, (0, padding_length))
+    #     elif len(audio) > target_audio_length:
+    #         audio = audio[:target_audio_length]
+
+    #     # Debugging
+    #     print(f"Adjusted Sample {idx}: video={len(video)}, audio={len(audio)}, ratio={len(audio) // len(video)}")
+
+    #     # Process video
+    #     video = np.stack([self.jpeg.decode(img, TJPF_GRAY) for img in video])
+    #     video = torch.as_tensor(video, dtype=torch.float32).permute(0, 3, 1, 2)
+
+    #     if self.video_transform:
+    #         video = self.video_transform(video)
+
+    #     # Tokenize text
+    #     token_id = self.tokenizer.tokenize(text)
+
+    #     return {"input": video, "audio": audio, "target": token_id}
+
 
     def __getitem__(self, idx):
         filename = self.filenames[idx]
-        data = torch.load(filename)
+        # data = torch.load(filename)
+        try:
+            data = torch.load(filename)
+        except Exception as e:
+            print(f"Error loading {filename}: {e}")
+            return None
 
         # load from dictionary
         video = data["video"]
@@ -68,6 +122,10 @@ class AVDataset(torch.utils.data.Dataset):
         audio = data["audio"]
         text = data["text"]
         text_data = text.split("\n")
+
+        # 샘플 크기 확인
+        print(f"Sample {idx}: video={len(video)}, audio={len(audio)}, text={text[:50]}")
+
 
         if video_size > self.cut: # pretrain or vox2
             # shard the text
@@ -101,6 +159,8 @@ class AVDataset(torch.utils.data.Dataset):
         # post processing and transforming into tensor
         video = np.stack([self.jpeg.decode(img, TJPF_GRAY) for img in video])
         video = torch.as_tensor(video).permute(0, 3, 1, 2) # T x C x H x W
+        video = video[:, :, :96, :96]  # (T, C, 96, 96)으로 강제 크기 고정
+
         if self.video_transform:
             video = self.video_transform(video)
         else:
@@ -116,6 +176,8 @@ class AVDataset(torch.utils.data.Dataset):
 
         if len(audio) < len(video) * self.audio_multiple:
             print(filename, len(audio), len(video))
+            padding_length = len(video) * self.audio_multiple - len(audio) #added
+            audio = torch.nn.functional.pad(audio, (0, padding_length))    #added
 
         return {"input": video, "audio": audio, "target": token_id}
 

@@ -32,10 +32,10 @@ def main(cfg):
     datamodule = DataModule(cfg)
     trainer = Trainer(
         accelerator="gpu",
-        devices="auto", # "auto"
-        precision="bf16", # 16 as float16 and 32 as full precision and bf16 as brain float: https://lightning.ai/docs/pytorch/1.5.9/advanced/mixed_precision.html
+        devices=1,  # 분산 학습 비활성화
+        precision="bf16",
         amp_backend="native",
-        strategy="ddp",
+        strategy="ddp" if cfg.trainer.use_ddp else None,  # 필요에 따라 DDP 전략 사용
         log_every_n_steps=500,
         max_epochs=-1,
         max_steps=cfg.scheduler.get("num_training_steps", -1),
@@ -51,10 +51,10 @@ def main(cfg):
     # Training and testing
     if cfg.train:
         trainer.fit(model=modelmodule, datamodule=datamodule)
-        trainer.test(ckpt_path=checkpoint.best_model_path, datamodule=datamodule)
-        shutil.copy(checkpoint.best_model_path, f"./{cfg.train_name}.ckpt")
+        trainer.test(ckpt_path='/home/work/SyncVSR/LRS/video/Vox+LRS2+LRS3.ckpt', datamodule=datamodule)
+        shutil.copy('/home/work/SyncVSR/LRS/video/Vox+LRS2+LRS3.ckpt', f"./{cfg.train_name}.ckpt")
     else:
-        modelmodule = modelmodule.load_from_checkpoint(cfg.trainer.resume_from_checkpoint, cfg=cfg, strict=check_availability("fairseq")) # strict=False can be done if you were 
+        modelmodule = modelmodule.load_from_checkpoint(cfg.trainer.resume_from_checkpoint, cfg=cfg, strict= False)#check_availability("fairseq")) # strict=False can be done if you were 
         trainer.test(model=modelmodule, datamodule=datamodule)
 
 
