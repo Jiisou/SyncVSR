@@ -14,7 +14,7 @@ from turbojpeg import TurboJPEG, TJPF_GRAY, TJSAMP_GRAY, TJFLAG_PROGRESSIVE
 from utils import retrieve_txt
 
 # constants
-MODEL_PATH = "./yolov8n-face.pt" # https://github.com/akanametov/yolo-face?tab=readme-ov-file#trained-models
+MODEL_PATH = "/home/work/SyncVSR/LRS/video/preprocess/yolov8n-face.pt" # https://github.com/akanametov/yolo-face?tab=readme-ov-file#trained-models
 jpeg = TurboJPEG()
 
 def load_model(model_path):
@@ -86,33 +86,96 @@ def extract_yolov8(mp4_path):
             break
     cap.release()
     return video
+import subprocess
+
+def has_audio(file_path):
+    """Check if the file has an audio stream using ffprobe."""
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-i", file_path, "-show_streams", "-select_streams", "a", "-loglevel", "error"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return bool(result.stdout.strip())  # If ffprobe output is not empty, audio exists
+    except Exception as e:
+        print(f"FFPROBE ERR: {e}")
+        return False
 
 def preprocess(file_name):
     result = {}
-    result["video"] = extract_yolov8(file_name)
-    result["audio"] = AudioSegment.from_file(file_name, format="mp4")
-    result["text"] = retrieve_txt(file_name)
+    try:
+        result["video"] = extract_yolov8(file_name)
+    except Exception as e:
+        print(f"YOLO ERR: {file_name} - {e}")
+        return
+    
+    if has_audio(file_name):
+        try:
+            result["audio"] = AudioSegment.from_file(file_name, format="mp4")
+        except Exception as e:
+            print(f"AUDIO ERR: {file_name} - {e}")
+            result["audio"] = None  # Handle files with unreadable audio
+    else:
+        print(f"No audio track found in {file_name}")
+        result["audio"] = None
 
-    # save
-    data_dir = "/data/LRS2"
-    target_dir = "/data/LRS2_YOLO"
+    try:
+        result["text"] = retrieve_txt(file_name)
+    except Exception as e:
+        print(f"TEXT ERR: {file_name} - {e}")
+        return
+
+    # Save logic remains unchanged
+    data_dir = "/home/work/data/aihub_preprocessed"
+    target_dir = "/home/work/data/aihub_pkl"
     savename = file_name.replace(data_dir, target_dir).replace(".mp4", ".pkl")
     try:
         if not os.path.exists(os.path.dirname(savename)):
-            os.makedirs(os.path.dirname(savename)) # if the folder does not exist, create it
-    except:
-        print(f"DIR ERR: {file_name}")
+            os.makedirs(os.path.dirname(savename))  # Create target folder if it does not exist
+    except Exception as e:
+        print(f"DIR ERR: {file_name} - {e}")
         return
+    
     try:
-        assert len(result["video"]) > 0, f"YOLO ERR: {file_name} failed to processed"
-        assert len(result["audio"]) > 0, f"AUDIO ERR: {file_name} failed to processed"
-    except:
+        assert len(result["video"]) > 0, f"YOLO ERR: {file_name} failed to process"
+        if result["audio"] is not None:
+            assert len(result["audio"]) > 0, f"AUDIO ERR: {file_name} failed to process"
+    except Exception as e:
+        print(e)
         return
     
     torch.save(result, savename)
     del result
     torch.cuda.empty_cache()
     return
+
+# def preprocess(file_name):
+#     result = {}
+#     result["video"] = extract_yolov8(file_name)
+#     result["audio"] = AudioSegment.from_file(file_name, format="mp4")
+#     result["text"] = retrieve_txt(file_name)
+
+#     # save
+#     data_dir = "/home/work/data/aihub_preprocessed"
+#     target_dir = "/home/work/data/aihub_pkl"
+#     savename = file_name.replace(data_dir, target_dir).replace(".mp4", ".pkl")
+#     try:
+#         if not os.path.exists(os.path.dirname(savename)):
+#             os.makedirs(os.path.dirname(savename)) # if the folder does not exist, create it
+#     except:
+#         print(f"DIR ERR: {file_name}")
+#         return
+#     try:
+#         assert len(result["video"]) > 0, f"YOLO ERR: {file_name} failed to processed"
+#         assert len(result["audio"]) > 0, f"AUDIO ERR: {file_name} failed to processed"
+#     except:
+#         return
+    
+#     torch.save(result, savename)
+#     del result
+#     torch.cuda.empty_cache()
+#     return
     
 
 if __name__ == "__main__":
@@ -128,35 +191,35 @@ if __name__ == "__main__":
     elif device == "cpu":
         num_workers = 0
 
-    data_dir = "/data/LRS2/"
-    target_dir = "/data/LRS2_YOLO/"
+    data_dir = "/home/work/data/aihub_preprocessed"
+    target_dir = "/home/work/data/aihub_pkl"
 
     # Fetch mp4s
-    pretrain_mp4_files = glob(os.path.join(data_dir, "pretrain", "**", "*.mp4"))
+    train_mp4_files = glob(os.path.join(data_dir, "train", "**", "*.mp4"))
     main_mp4_files = glob(os.path.join(data_dir, "main", "**", "*.mp4"))
 
-    pretrain_mp4_basename = [item.replace(data_dir, "") for item in pretrain_mp4_files]
-    pretrain_mp4_basename = [item.replace(".mp4", "") for item in pretrain_mp4_basename]
+    train_mp4_basename = [item.replace(data_dir, "") for item in train_mp4_files]
+    train_mp4_basename = [item.replace(".mp4", "") for item in train_mp4_basename]
     main_mp4_basename = [item.replace(data_dir, "") for item in main_mp4_files]
     main_mp4_basename = [item.replace(".mp4", "") for item in main_mp4_basename]
 
     # Fetch pkls
-    pretrain_pkl_files = glob(os.path.join(target_dir, "pretrain", "**", "*.pkl"))
+    train_pkl_files = glob(os.path.join(target_dir, "train", "**", "*.pkl"))
     main_pkl_files = glob(os.path.join(target_dir, "main", "**", "*.pkl"))
 
-    pretrain_pkl_basename = [item.replace(target_dir, "") for item in pretrain_pkl_files]
-    pretrain_pkl_basename = [item.replace(".pkl", "") for item in pretrain_pkl_basename]
+    train_pkl_basename = [item.replace(target_dir, "") for item in train_pkl_files]
+    train_pkl_basename = [item.replace(".pkl", "") for item in train_pkl_basename]
     main_pkl_basename = [item.replace(target_dir, "") for item in main_pkl_files]
     main_pkl_basename = [item.replace(".pkl", "") for item in main_pkl_basename]
     
     # Include items only when it is not included in list_target_basename
-    unique_pretrain_items = list(set(pretrain_mp4_basename) - set(pretrain_pkl_basename))
+    unique_train_items = list(set(train_mp4_basename) - set(train_pkl_basename))
     unique_main_items = list(set(main_mp4_basename) - set(main_pkl_basename))
     
-    unique_items = unique_pretrain_items + unique_main_items
+    unique_items = unique_train_items + unique_main_items
     todo_process_files = [f"{data_dir}{item}.mp4" for item in unique_items]
     random.shuffle(todo_process_files)
-    print(f"original mp4: {len(pretrain_mp4_files+main_mp4_files)} -> todo process: {len(todo_process_files)}")
+    print(f"original mp4: {len(train_mp4_files+main_mp4_files)} -> todo process: {len(todo_process_files)}")
 
     with Pool(batch_size) as p:
         print("mapping ...")
