@@ -44,8 +44,11 @@ class AVDataset(torch.utils.data.Dataset):
         self.length_distribution = np.bincount(self.length)
         self.cut = self.length.max()
         self.tokenizer = TextTransform(
-            sp_model_path="./spm/unigram/unigram5000.model",
-            dict_path="./spm/unigram/unigram5000_units.txt",
+            #sp 토크나이저 위치, transforms.py, av_dataset.py
+            sp_model_path = "/home/work/SyncVSR/LRS/video/spm/unigram/t5-sp-bpe-aihub+sebasi.model", 
+            dict_path     = "/home/work/SyncVSR/LRS/video/spm/unigram/t5-sp-bpe-aihub+sebasi.txt",
+            # sp_model_path = "./spm/unigram/unigram5000.model", #"/home/work/SyncVSR/LRS/video/spm/unigram/t5-sp-bpe-nsmc.model", 
+            # dict_path = "./spm/unigram/unigram5000_units.txt", #"/home/work/SyncVSR/LRS/video/spm/unigram/t5-sp-bpe-nsmc.vocab",
         )
         self.video_max_length = self.length.max()
         self.language = language
@@ -54,13 +57,17 @@ class AVDataset(torch.utils.data.Dataset):
         self.audio_padding_max = int((self.video_max_length / 25) * self.neural_audio_codec_sample_rate)
         
         # multiple for video-audio alignment
-        self.audio_multiple = 40
+        self.audio_multiple = 40 
         print(f"using {self.language} with {self.cut} cut")
-
 
     def __getitem__(self, idx):
         filename = self.filenames[idx]
-        data = torch.load(filename)
+        # data = torch.load(filename)
+        try:
+            data = torch.load(filename)
+        except Exception as e:
+            print(f"Error loading {filename}: {e}")
+            return None
 
         # load from dictionary
         video = data["video"]
@@ -68,6 +75,9 @@ class AVDataset(torch.utils.data.Dataset):
         audio = data["audio"]
         text = data["text"]
         text_data = text.split("\n")
+
+        # 샘플 크기 확인
+        print(f"Sample {idx}: video={len(video)}, audio={len(audio)}, text={text[:50]}")
 
         if video_size > self.cut: # pretrain or vox2
             # shard the text
@@ -88,6 +98,7 @@ class AVDataset(torch.utils.data.Dataset):
             
             list_word = []
             for word in words:
+                # try:
                 if (time_start - margin) <= float(word[1]) and float(word[2]) < (time_end + margin):
                     list_word.append(word[0])
             
@@ -101,6 +112,7 @@ class AVDataset(torch.utils.data.Dataset):
         # post processing and transforming into tensor
         video = np.stack([self.jpeg.decode(img, TJPF_GRAY) for img in video])
         video = torch.as_tensor(video).permute(0, 3, 1, 2) # T x C x H x W
+
         if self.video_transform:
             video = self.video_transform(video)
         else:
