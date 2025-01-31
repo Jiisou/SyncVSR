@@ -1,4 +1,4 @@
-# Copyright 2019 Shigeki Karita
+Copyright 2019 Shigeki Karita
 #  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
 
 """Transformer speech recognition model (pytorch)."""
@@ -192,13 +192,24 @@ class E2E(torch.nn.Module):
 
         if self.codec is not None:
             # audio loss
-            audio_tokens = self.forward_audios(audios.permute(1,0,2).squeeze(0))
+            audio_tokens = self.forward_audios(audios.permute(1, 0, 2).squeeze(0))
             audio_tokens = audio_tokens[:, : x.size(1) * self.audio_alignment]
 
+            # ✅ logits_audio 초기화 (기존 코드 유지)
             logits_audio = self.audio_classifier(x)
-            logits_audio = logits_audio.float() # converting into float type before the loss calculation
+            logits_audio = logits_audio.float()  # converting into float type before the loss calculation
+
+            # ✅ 크기 불일치 방지를 위해 길이 맞추기
+            min_size = min(logits_audio.shape[1], audio_tokens.shape[1] // self.audio_alignment)
+
+            logits_audio = logits_audio[:, :min_size, :]
+            audio_tokens = audio_tokens[:, : (min_size * self.audio_alignment)]
+
+            # ✅ 차원 변환 후 CrossEntropyLoss 적용
             logits_audio = logits_audio.unflatten(2, (-1, self.audio_vocab_size))
-            loss_audio = F.cross_entropy(logits_audio.flatten(0, 2),audio_tokens.flatten())
+            loss_audio = F.cross_entropy(logits_audio.flatten(0, 2), audio_tokens.flatten())
+        # return loss_audio
+
         else:
             loss_audio = None
         
