@@ -41,6 +41,7 @@ class Conv3dResNet(torch.nn.Module):
         xs_pad = xs_pad.transpose(1, 2)  # [B, T, C, H, W] -> [B, C, T, H, W]
 
         B, C, T, H, W = xs_pad.size()
+        xs_pad = xs_pad.to(dtype=torch.float16)  # Or use torch.float32 if necessary
         xs_pad = self.frontend3D(xs_pad)
         Tnew = xs_pad.shape[2]
         xs_pad = threeD_to_2D_tensor(xs_pad)
